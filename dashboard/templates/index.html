@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IoT-Shield Dashboard</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px;
+        }
+
+        td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #eaf2ff;
+        }
+
+        .high {
+            color: white;
+            background-color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .badge-high {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>🚨 IoT-Shield Security Dashboard</h1>
+
+    <table>
+        <tr>
+            <th>Time</th>
+            <th>Device</th>
+            <th>Topic</th>
+            <th>Attack</th>
+            <th>Severity</th>
+        </tr>
+
+        {% for alert in alerts %}
+        <tr>
+            <td>{{ alert[0] }}</td>
+            <td>{{ alert[1] }}</td>
+            <td>{{ alert[2] }}</td>
+            <td>{{ alert[3] }}</td>
+
+            <td>
+                {% if alert[4] == 'HIGH' %}
+                    <span class="badge badge-high">HIGH</span>
+                {% else %}
+                    {{ alert[4] }}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+
+</body>
+</html>
