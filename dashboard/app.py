@@ -1,6 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, url_for
 import sqlite3
 import os
+import subprocess
+import sys
 
 app = Flask(__name__)
 
@@ -72,6 +74,43 @@ def index():
         summary=summary
     )
 
+def run_script(script_path):
+    subprocess.Popen(
+        [sys.executable, script_path],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    )
+
+
+@app.route("/simulate/normal")
+def simulate_normal():
+    run_script("simulator/normal_publisher.py")
+    return redirect(url_for("index"))
+
+
+@app.route("/simulate/flood")
+def simulate_flood():
+    run_script("simulator/flood_attack.py")
+    return redirect(url_for("index"))
+
+
+@app.route("/simulate/unauthorized")
+def simulate_unauthorized():
+    run_script("simulator/unauthorized_topic_attack.py")
+    return redirect(url_for("index"))
+
+
+@app.route("/simulate/abnormal")
+def simulate_abnormal():
+    run_script("simulator/abnormal_value_attack.py")
+    return redirect(url_for("index"))
+
+
+@app.route("/simulate/malformed")
+def simulate_malformed():
+    run_script("simulator/malformed_payload_attack.py")
+    return redirect(url_for("index"))
+    
 
 if __name__ == "__main__":
     app.run(debug=True)
