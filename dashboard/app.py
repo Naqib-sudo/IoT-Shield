@@ -110,7 +110,31 @@ def simulate_abnormal():
 def simulate_malformed():
     run_script("simulator/malformed_payload_attack.py")
     return redirect(url_for("index"))
-    
+
+
+@app.route("/alert/<int:alert_id>/acknowledge")
+def acknowledge_alert(alert_id):
+    conn = get_db_connection()
+    conn.execute(
+        "UPDATE alerts SET status = ? WHERE id = ?",
+        ("ACKNOWLEDGED", alert_id)
+    )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("index"))
+
+
+@app.route("/alert/<int:alert_id>/resolve")
+def resolve_alert(alert_id):
+    conn = get_db_connection()
+    conn.execute(
+        "UPDATE alerts SET status = ? WHERE id = ?",
+        ("RESOLVED", alert_id)
+    )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("index"))
+
 
 if __name__ == "__main__":
     app.run(debug=True)

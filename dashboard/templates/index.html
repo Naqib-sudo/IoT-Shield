@@ -273,6 +273,7 @@
                     <th>Severity</th>
                     <th>Status</th>
                     <th>Description</th>
+                    <th>Action</th>
                 </tr>
 
                 {% for alert in alerts %}
@@ -284,8 +285,38 @@
                     <td>
                         <span class="badge {{ alert.severity }}">{{ alert.severity }}</span>
                     </td>
-                    <td class="status-new">{{ alert.status }}</td>
+
+                    <td>
+                        {% if alert.status == 'NEW' %}
+                            <span style="color:#dc2626; font-weight:bold;">NEW</span>
+                        {% elif alert.status == 'ACKNOWLEDGED' %}
+                            <span style="color:#f97316; font-weight:bold;">ACKNOWLEDGED</span>
+                        {% elif alert.status == 'RESOLVED' %}
+                            <span style="color:#16a34a; font-weight:bold;">RESOLVED</span>
+                        {% else %}
+                            {{ alert.status }}
+                        {% endif %}
+                    </td>
+
                     <td>{{ alert.description }}</td>
+
+                    <td>
+                        {% if alert.status == 'NEW' %}
+                            <a href="/alert/{{ alert.id }}/acknowledge">
+                                <button style="background:#f97316;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">
+                                    Acknowledge
+                                </button>
+                            </a>
+                        {% elif alert.status == 'ACKNOWLEDGED' %}
+                            <a href="/alert/{{ alert.id }}/resolve">
+                                <button style="background:#16a34a;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">
+                                    Resolve
+                                </button>
+                            </a>
+                        {% else %}
+                            <span style="color:#16a34a;font-weight:bold;">Closed</span>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </table>
