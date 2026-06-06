@@ -5,104 +5,302 @@
 
     <style>
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #f4f6f9;
             margin: 0;
-            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #eef2f7;
+            color: #1f2937;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            color: white;
+            padding: 25px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header p {
+            margin: 5px 0 0;
+            color: #cbd5e1;
+        }
+
+        .nav {
+            background: #111827;
+            padding: 12px 40px;
+        }
+
+        .nav a {
+            color: #d1d5db;
+            margin-right: 25px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .nav a:hover {
+            color: white;
         }
 
         .container {
-            width: 90%;
-            max-width: 1100px;
-            margin: 40px auto;
-            background: white;
-            padding: 20px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 92%;
+            margin: 25px auto;
         }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+        .card h3 {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .card p {
+            margin: 10px 0 0;
+            font-size: 26px;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .online {
+            color: #16a34a !important;
+        }
+
+        .section {
+            background: white;
+            padding: 22px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+        .section h2 {
+            margin-top: 0;
+            color: #111827;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            font-size: 14px;
         }
 
         th {
-            background-color: #2c3e50;
+            background: #1e293b;
             color: white;
-            padding: 10px;
+            padding: 12px;
+            text-align: left;
         }
 
         td {
-            padding: 10px;
-            text-align: center;
-        }
-
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
+            padding: 11px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         tr:hover {
-            background-color: #eaf2ff;
-        }
-
-        .high {
-            color: white;
-            background-color: #e74c3c;
-            font-weight: bold;
+            background: #f8fafc;
         }
 
         .badge {
             padding: 5px 10px;
-            border-radius: 5px;
-        }
-
-        .badge-high {
-            background-color: #e74c3c;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
             color: white;
         }
 
+        .LOW {
+            background: #3b82f6;
+        }
+
+        .MEDIUM {
+            background: #facc15;
+            color: #111827;
+        }
+
+        .HIGH {
+            background: #f97316;
+        }
+
+        .CRITICAL {
+            background: #dc2626;
+        }
+
+        .status-new {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .sim-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .sim-buttons button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #1e3a8a;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .sim-buttons button:hover {
+            background: #2563eb;
+        }
+
+        .note {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 15px;
+            color: #6b7280;
+            font-size: 13px;
+        }
     </style>
 </head>
 
 <body>
 
-<div class="container">
-    <h1>🚨 IoT-Shield Security Dashboard</h1>
+    <div class="header">
+        <h1>🛡️ IoT-Shield Security Monitoring Platform</h1>
+        <p>Real-time MQTT intrusion detection and IoT traffic monitoring dashboard</p>
+    </div>
 
-    <table>
-        <tr>
-            <th>Time</th>
-            <th>Device</th>
-            <th>Topic</th>
-            <th>Attack</th>
-            <th>Severity</th>
-        </tr>
+    <div class="nav">
+        <a href="#home">Home</a>
+        <a href="#traffic">Traffic Monitor</a>
+        <a href="#alerts">Alerts</a>
+        <a href="#simulation">Simulation Center</a>
+        <a href="#settings">Settings</a>
+    </div>
 
-        {% for alert in alerts %}
-        <tr>
-            <td>{{ alert[0] }}</td>
-            <td>{{ alert[1] }}</td>
-            <td>{{ alert[2] }}</td>
-            <td>{{ alert[3] }}</td>
+    <div class="container">
 
-            <td>
-                {% if alert[4] == 'HIGH' %}
-                    <span class="badge badge-high">HIGH</span>
-                {% else %}
-                    {{ alert[4] }}
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+        <div id="home" class="cards">
+            <div class="card">
+                <h3>System Status</h3>
+                <p class="online">{{ summary.system_status }}</p>
+            </div>
 
-</div>
+            <div class="card">
+                <h3>Total Messages</h3>
+                <p>{{ summary.total_messages }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Total Alerts</h3>
+                <p>{{ summary.total_alerts }}</p>
+            </div>
+
+            <div class="card">
+                <h3>High / Critical Alerts</h3>
+                <p>{{ summary.high_critical_alerts }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Active Devices</h3>
+                <p>{{ summary.active_devices }}</p>
+            </div>
+        </div>
+
+        <div id="simulation" class="section">
+            <h2>Simulation Center</h2>
+            <p class="note">Attack simulation buttons will be connected in the next development step.</p>
+
+            <div class="sim-buttons">
+                <button>Simulate Normal Traffic</button>
+                <button>Flood Attack</button>
+                <button>Unauthorized Topic</button>
+                <button>Abnormal Value</button>
+                <button>Malformed Payload</button>
+            </div>
+        </div>
+
+        <div id="traffic" class="section">
+            <h2>Live Traffic Monitor</h2>
+
+            <table>
+                <tr>
+                    <th>Time</th>
+                    <th>Device</th>
+                    <th>Topic</th>
+                    <th>Payload</th>
+                    <th>Status</th>
+                </tr>
+
+                {% for row in traffic %}
+                <tr>
+                    <td>{{ row.timestamp }}</td>
+                    <td>{{ row.device_id }}</td>
+                    <td>{{ row.topic }}</td>
+                    <td>{{ row.payload }}</td>
+                    <td>{{ row.status }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div id="alerts" class="section">
+            <h2>Security Alerts</h2>
+
+            <table>
+                <tr>
+                    <th>Time</th>
+                    <th>Device</th>
+                    <th>Topic</th>
+                    <th>Attack Type</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Description</th>
+                </tr>
+
+                {% for alert in alerts %}
+                <tr>
+                    <td>{{ alert.timestamp }}</td>
+                    <td>{{ alert.device_id }}</td>
+                    <td>{{ alert.topic }}</td>
+                    <td>{{ alert.attack_type }}</td>
+                    <td>
+                        <span class="badge {{ alert.severity }}">{{ alert.severity }}</span>
+                    </td>
+                    <td class="status-new">{{ alert.status }}</td>
+                    <td>{{ alert.description }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div id="settings" class="section">
+            <h2>Settings</h2>
+            <p class="note">Future configuration area for login, user profile, email notification, and system preferences.</p>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        IoT-Shield | MQTT Security Monitoring Prototype
+    </div>
 
 </body>
 </html>
