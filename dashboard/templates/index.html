@@ -19,8 +19,6 @@
             background: linear-gradient(135deg, #0f172a, #1e3a8a);
             color: white;
             padding: 25px 40px;
-            position: relative;
-            overflow: hidden;
         }
 
         .header h1 {
@@ -36,13 +34,11 @@
         .nav {
             background: #111827;
             padding: 12px 40px;
-
             position: sticky;
             top: 0;
             z-index: 1000;
-
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
+        }
 
         .nav a {
             color: #d1d5db;
@@ -104,6 +100,14 @@
             color: #111827;
         }
 
+        #home,
+        #traffic,
+        #alerts,
+        #simulation,
+        #settings {
+            scroll-margin-top: 80px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -151,11 +155,6 @@
             background: #dc2626;
         }
 
-        .status-new {
-            color: #dc2626;
-            font-weight: bold;
-        }
-
         .sim-buttons {
             display: flex;
             flex-wrap: wrap;
@@ -176,9 +175,36 @@
             background: #2563eb;
         }
 
+        .action-btn {
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .ack-btn {
+            background: #f97316;
+        }
+
+        .resolve-btn {
+            background: #16a34a;
+        }
+
         .note {
             color: #6b7280;
             font-size: 14px;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .chart-box {
+            min-height: 320px;
         }
 
         .footer {
@@ -187,15 +213,9 @@
             color: #6b7280;
             font-size: 13px;
         }
-
-        #home,
-        #traffic,
-        #alerts,
-        #simulation,
-        #settings {
-                    scroll-margin-top: 80px;
-                }
     </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -207,9 +227,9 @@
 
     <div class="nav">
         <a href="#home">Home</a>
+        <a href="#simulation">Simulation Center</a>
         <a href="#traffic">Traffic Monitor</a>
         <a href="#alerts">Alerts</a>
-        <a href="#simulation">Simulation Center</a>
         <a href="#settings">Settings</a>
     </div>
 
@@ -239,6 +259,22 @@
             <div class="card">
                 <h3>Active Devices</h3>
                 <p>{{ summary.active_devices }}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Security Analytics</h2>
+
+            <div class="chart-grid">
+                <div class="chart-box">
+                    <h3>Alerts by Severity</h3>
+                    <canvas id="severityChart"></canvas>
+                </div>
+
+                <div class="chart-box">
+                    <h3>Attack Type Distribution</h3>
+                    <canvas id="attackChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -321,15 +357,11 @@
                     <td>
                         {% if alert.status == 'NEW' %}
                             <a href="/alert/{{ alert.id }}/acknowledge">
-                                <button style="background:#f97316;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">
-                                    Acknowledge
-                                </button>
+                                <button class="action-btn ack-btn">Acknowledge</button>
                             </a>
                         {% elif alert.status == 'ACKNOWLEDGED' %}
                             <a href="/alert/{{ alert.id }}/resolve">
-                                <button style="background:#16a34a;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">
-                                    Resolve
-                                </button>
+                                <button class="action-btn resolve-btn">Resolve</button>
                             </a>
                         {% else %}
                             <span style="color:#16a34a;font-weight:bold;">Closed</span>
@@ -350,6 +382,35 @@
     <div class="footer">
         IoT-Shield | MQTT Security Monitoring Prototype
     </div>
+
+    <script>
+    var severityLabels = {{ severity_data["labels"] | tojson }};
+    var severityValues = {{ severity_data["values"] | tojson }};
+
+    var attackLabels = {{ attack_data["labels"] | tojson }};
+    var attackValues = {{ attack_data["values"] | tojson }};
+
+    new Chart(document.getElementById('severityChart'), {
+        type: 'pie',
+        data: {
+            labels: severityLabels,
+            datasets: [{
+                data: severityValues
+            }]
+        }
+    });
+
+    new Chart(document.getElementById('attackChart'), {
+        type: 'bar',
+        data: {
+            labels: attackLabels,
+            datasets: [{
+                label: 'Number of Alerts',
+                data: attackValues
+            }]
+        }
+    });
+</script>
 
 </body>
 </html>

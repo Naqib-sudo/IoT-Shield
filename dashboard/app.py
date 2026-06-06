@@ -6,7 +6,8 @@ import sys
 
 app = Flask(__name__)
 
-DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'database', 'iot_shield.db')
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+DB_PATH = os.path.join(BASE_DIR, "database", "iot_shield.db")
 
 
 def get_db_connection():
@@ -61,22 +62,58 @@ def get_summary():
     }
 
 
+def get_chart_data():
+    conn = get_db_connection()
+
+    severity_rows = conn.execute("""
+        SELECT severity, COUNT(*) as count
+        FROM alerts
+        GROUP BY severity
+    """).fetchall()
+
+    attack_rows = conn.execute("""
+        SELECT attack_type, COUNT(*) as count
+        FROM alerts
+        GROUP BY attack_type
+    """).fetchall()
+
+    conn.close()
+
+    severity_data = {
+        "labels": [row["severity"] for row in severity_rows],
+        "values": [row["count"] for row in severity_rows]
+    }
+
+    attack_data = {
+        "labels": [row["attack_type"] for row in attack_rows],
+        "values": [row["count"] for row in attack_rows]
+    }
+
+    return severity_data, attack_data
+
+
 @app.route("/")
 def index():
     alerts = get_alerts()
     traffic = get_traffic_logs()
     summary = get_summary()
+    severity_data, attack_data = get_chart_data()
 
     return render_template(
         "index.html",
         alerts=alerts,
         traffic=traffic,
-        summary=summary
+        summary=summary,
+        severity_data=severity_data,
+        attack_data=attack_data
     )
 
+
 def run_script(script_path):
+    full_path = os.path.join(BASE_DIR, script_path)
+
     subprocess.Popen(
-        [sys.executable, script_path],
+        [sys.executable, full_path],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
     )
