@@ -115,6 +115,23 @@ def check_unauthorized_topic(device_id, topic):
 
 
 def check_flooding(device_id, topic, message_count):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    existing_alert = cursor.execute("""
+        SELECT id FROM alerts
+        WHERE device_id = ?
+        AND attack_type = 'MQTT Flooding'
+        AND status = 'NEW'
+        ORDER BY id DESC
+        LIMIT 1
+    """, (device_id,)).fetchone()
+
+    conn.close()
+
+    if existing_alert:
+        return
+
     if message_count > FLOOD_CRITICAL_THRESHOLD:
         save_alert(
             device_id=device_id,
@@ -123,6 +140,7 @@ def check_flooding(device_id, topic, message_count):
             severity="CRITICAL",
             description=f"Device sent {message_count} messages, exceeding critical threshold {FLOOD_CRITICAL_THRESHOLD}"
         )
+
     elif message_count > FLOOD_HIGH_THRESHOLD:
         save_alert(
             device_id=device_id,

@@ -112,6 +112,20 @@ def get_chart_data():
 
     return severity_data, attack_data
 
+def get_latest_critical_alert():
+    conn = get_db_connection()
+
+    alert = conn.execute("""
+        SELECT id, timestamp, device_id, attack_type, severity, description
+        FROM alerts
+        WHERE severity IN ('HIGH', 'CRITICAL')
+        AND status = 'NEW'
+        ORDER BY id DESC
+        LIMIT 1
+    """).fetchone()
+
+    conn.close()
+    return alert
 
 @app.route("/")
 def index():
@@ -121,6 +135,7 @@ def index():
     traffic = get_traffic_logs()
     summary = get_summary()
     severity_data, attack_data = get_chart_data()
+    latest_critical_alert = get_latest_critical_alert()
 
     return render_template(
         "index.html",
@@ -129,7 +144,8 @@ def index():
         summary=summary,
         severity_data=severity_data,
         attack_data=attack_data,
-        current_filter=filter_type
+        current_filter=filter_type,
+        latest_critical_alert=latest_critical_alert
     )
 
 
@@ -192,6 +208,16 @@ def resolve_alert(alert_id):
         "UPDATE alerts SET status = ? WHERE id = ?",
         ("RESOLVED", alert_id)
     )
+    conn.commit()
+    conn.close()
+    return redirect(url_for("index") + "#alerts")
+
+
+@app.route("/alerts/clear")
+def clear_alerts():
+    conn = get_db_connection()
+    conn.execute("DELETE FROM alerts")
+    conn.execute("DELETE FROM traffic_logs")
     conn.commit()
     conn.close()
     return redirect(url_for("index") + "#alerts")

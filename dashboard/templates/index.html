@@ -229,6 +229,40 @@
             color: white;
         }
 
+        .alert-popup {
+            position: fixed;
+            top: 70px;
+            right: 25px;
+            background: #dc2626;
+            color: white;
+            padding: 18px 22px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+            z-index: 2000;
+            max-width: 360px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .alert-popup h3 {
+            margin: 0 0 8px;
+        }
+
+        .alert-popup p {
+            margin: 4px 0;
+            font-size: 14px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
         .footer {
             text-align: center;
             padding: 15px;
@@ -241,6 +275,16 @@
 </head>
 
 <body>
+
+    {% if latest_critical_alert %}
+    <div class="alert-popup">
+        <h3>🚨 {{ latest_critical_alert.severity }} Alert Detected</h3>
+        <p><b>Attack:</b> {{ latest_critical_alert.attack_type }}</p>
+        <p><b>Device:</b> {{ latest_critical_alert.device_id }}</p>
+        <p><b>Time:</b> {{ latest_critical_alert.timestamp }}</p>
+        <p>{{ latest_critical_alert.description }}</p>
+    </div>
+    {% endif %}
 
     <div class="header">
         <h1>🛡️ IoT-Shield Security Monitoring Platform</h1>
@@ -339,6 +383,11 @@
 
         <div id="alerts" class="section">
             <h2>Security Alerts</h2>
+            <a href="/alerts/clear">
+                <button style="background:#dc2626;color:white;border:none;padding:8px 14px;border-radius:8px;font-weight:bold;cursor:pointer;margin-bottom:12px;">
+                    Clear All Logs
+                </button>
+            </a>
 
             <div class="filter-buttons">
                 <a href="/#alerts"><button>All</button></a>
@@ -445,11 +494,7 @@
     });
     </script>
 
-    <script>
-    setInterval(function() {
-        location.reload();
-    }, 3000);
-    </script>
+
 
 </body>
 </html>
