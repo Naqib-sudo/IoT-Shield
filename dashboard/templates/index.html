@@ -4,6 +4,10 @@
     <title>IoT-Shield Dashboard</title>
 
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
             margin: 0;
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -32,7 +36,13 @@
         .nav {
             background: #111827;
             padding: 12px 40px;
-        }
+
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
 
         .nav a {
             color: #d1d5db;
@@ -177,6 +187,14 @@
             color: #6b7280;
             font-size: 13px;
         }
+
+        #home,
+        #traffic,
+        #alerts,
+        #simulation,
+        #settings {
+                    scroll-margin-top: 80px;
+                }
     </style>
 </head>
 

@@ -85,31 +85,31 @@ def run_script(script_path):
 @app.route("/simulate/normal")
 def simulate_normal():
     run_script("simulator/normal_publisher.py")
-    return redirect(url_for("index"))
+    return redirect(url_for("index") + "#simulation")
 
 
 @app.route("/simulate/flood")
 def simulate_flood():
     run_script("simulator/flood_attack.py")
-    return redirect(url_for("index"))
+    return redirect(url_for("index") + "#simulation")
 
 
 @app.route("/simulate/unauthorized")
 def simulate_unauthorized():
     run_script("simulator/unauthorized_topic_attack.py")
-    return redirect(url_for("index"))
+    return redirect(url_for("index") + "#simulation")
 
 
 @app.route("/simulate/abnormal")
 def simulate_abnormal():
     run_script("simulator/abnormal_value_attack.py")
-    return redirect(url_for("index"))
+    return redirect(url_for("index") + "#simulation")
 
 
 @app.route("/simulate/malformed")
 def simulate_malformed():
     run_script("simulator/malformed_payload_attack.py")
-    return redirect(url_for("index"))
+    return redirect(url_for("index") + "#simulation")
 
 
 @app.route("/alert/<int:alert_id>/acknowledge")
@@ -121,7 +121,7 @@ def acknowledge_alert(alert_id):
     )
     conn.commit()
     conn.close()
-    return redirect(url_for("index"))
+    return redirect(url_for("index") + "#alerts")
 
 
 @app.route("/alert/<int:alert_id>/resolve")
@@ -133,7 +133,7 @@ def resolve_alert(alert_id):
     )
     conn.commit()
     conn.close()
-    return redirect(url_for("index"))
+    return redirect(url_for("index") + "#alerts")
 
 
 if __name__ == "__main__":
