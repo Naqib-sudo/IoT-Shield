@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, request
 import sqlite3
 import os
 import subprocess
@@ -16,14 +16,35 @@ def get_db_connection():
     return conn
 
 
-def get_alerts():
+def get_alerts(filter_type=None):
     conn = get_db_connection()
-    alerts = conn.execute("""
-        SELECT id, timestamp, device_id, topic, attack_type, severity, description, status
-        FROM alerts
-        ORDER BY id DESC
-        LIMIT 50
-    """).fetchall()
+
+    if filter_type in ["LOW", "MEDIUM", "HIGH", "CRITICAL"]:
+        alerts = conn.execute("""
+            SELECT id, timestamp, device_id, topic, attack_type, severity, description, status
+            FROM alerts
+            WHERE severity = ?
+            ORDER BY id DESC
+            LIMIT 50
+        """, (filter_type,)).fetchall()
+
+    elif filter_type in ["NEW", "ACKNOWLEDGED", "RESOLVED"]:
+        alerts = conn.execute("""
+            SELECT id, timestamp, device_id, topic, attack_type, severity, description, status
+            FROM alerts
+            WHERE status = ?
+            ORDER BY id DESC
+            LIMIT 50
+        """, (filter_type,)).fetchall()
+
+    else:
+        alerts = conn.execute("""
+            SELECT id, timestamp, device_id, topic, attack_type, severity, description, status
+            FROM alerts
+            ORDER BY id DESC
+            LIMIT 50
+        """).fetchall()
+
     conn.close()
     return alerts
 
@@ -94,7 +115,9 @@ def get_chart_data():
 
 @app.route("/")
 def index():
-    alerts = get_alerts()
+    filter_type = request.args.get("filter")
+
+    alerts = get_alerts(filter_type)
     traffic = get_traffic_logs()
     summary = get_summary()
     severity_data, attack_data = get_chart_data()
@@ -105,19 +128,20 @@ def index():
         traffic=traffic,
         summary=summary,
         severity_data=severity_data,
-        attack_data=attack_data
+        attack_data=attack_data,
+        current_filter=filter_type
     )
 
 
 def run_script(script_path):
     full_path = os.path.join(BASE_DIR, script_path)
 
+    print(f"Running script: {full_path}")
+
     subprocess.Popen(
         [sys.executable, full_path],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
+        cwd=BASE_DIR
     )
-
 
 @app.route("/simulate/normal")
 def simulate_normal():

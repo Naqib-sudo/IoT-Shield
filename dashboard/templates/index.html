@@ -207,6 +207,28 @@
             min-height: 320px;
         }
 
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .filter-buttons button {
+            padding: 8px 13px;
+            border: none;
+            border-radius: 20px;
+            background: #e5e7eb;
+            color: #111827;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .filter-buttons button:hover {
+            background: #1e3a8a;
+            color: white;
+        }
+
         .footer {
             text-align: center;
             padding: 15px;
@@ -318,6 +340,17 @@
         <div id="alerts" class="section">
             <h2>Security Alerts</h2>
 
+            <div class="filter-buttons">
+                <a href="/#alerts"><button>All</button></a>
+                <a href="/?filter=LOW#alerts"><button>Low</button></a>
+                <a href="/?filter=MEDIUM#alerts"><button>Medium</button></a>
+                <a href="/?filter=HIGH#alerts"><button>High</button></a>
+                <a href="/?filter=CRITICAL#alerts"><button>Critical</button></a>
+                <a href="/?filter=NEW#alerts"><button>New</button></a>
+                <a href="/?filter=ACKNOWLEDGED#alerts"><button>Acknowledged</button></a>
+                <a href="/?filter=RESOLVED#alerts"><button>Resolved</button></a>
+            </div>
+
             <table>
                 <tr>
                     <th>Time</th>
@@ -410,7 +443,13 @@
             }]
         }
     });
-</script>
+    </script>
+
+    <script>
+    setInterval(function() {
+        location.reload();
+    }, 3000);
+    </script>
 
 </body>
 </html>
