@@ -1,4 +1,5 @@
 from datetime import datetime
+from notification.email_alert import send_email_alert
 import sqlite3
 import os
 import ast
@@ -80,6 +81,26 @@ def save_alert(device_id, topic, attack_type, severity, description):
     """, (timestamp, device_id, topic, attack_type, severity, description, "NEW"))
 
     conn.commit()
+    if severity in ["HIGH", "CRITICAL"]:
+        send_email_alert(
+            subject=f"🚨 IoT-Shield {severity} Alert",
+            body=f"""
+    Attack Type: {attack_type}
+
+    Severity: {severity}
+
+    Device: {device_id}
+
+    Topic: {topic}
+
+    Description:
+    {description}
+
+    Please review the IoT-Shield dashboard immediately.
+    """
+        )
+
+        
     conn.close()
 
     log_file = os.path.join(
