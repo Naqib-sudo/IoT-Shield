@@ -4,7 +4,7 @@ from email.message import EmailMessage
 SENDER_EMAIL = "iotshieldproject@gmail.com"
 APP_PASSWORD = "eytd qbzp bkll xqip"
 
-RECEIVER_EMAIL = "iotshieldproject@gmail.com"
+RECEIVER_EMAIL = "naqib.dp@gmail.com"
 
 
 def send_email_alert(subject, body):
