@@ -45,6 +45,14 @@ CREATE TABLE IF NOT EXISTS devices (
 )
 """)
 
+# Store system configuration/settings
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+)
+""")
+
 # Insert sample known devices
 cursor.execute("""
 INSERT OR IGNORE INTO devices (device_id, device_name, device_type, status)
@@ -52,6 +60,22 @@ VALUES
 ('temp_sensor_01', 'Temperature Sensor 01', 'Temperature Sensor', 'ACTIVE'),
 ('humidity_sensor_01', 'Humidity Sensor 01', 'Humidity Sensor', 'ACTIVE')
 """)
+
+# Insert default system settings
+default_settings = {
+    "recipient_email": "naqib.dp@gmail.com",
+    "mqtt_host": "localhost",
+    "mqtt_port": "1883",
+    "flood_high_threshold": "100",
+    "flood_critical_threshold": "200",
+    "temperature_threshold": "80"
+}
+
+for key, value in default_settings.items():
+    cursor.execute("""
+        INSERT OR IGNORE INTO settings (key, value)
+        VALUES (?, ?)
+    """, (key, value))
 
 conn.commit()
 conn.close()

@@ -455,8 +455,68 @@
         </div>
 
         <div id="settings" class="section">
-            <h2>Settings</h2>
-            <p class="note">Future configuration area for login, user profile, email notification, and system preferences.</p>
+            <h2>Administration & Configuration</h2>
+            <p class="note">Manage IoT-Shield system settings and application configuration.</p>
+
+            {% if message == "notification_saved" %}
+                <div class="success-banner">✅ Notification settings updated successfully.</div>
+            {% elif message == "test_email_sent" %}
+                <div class="success-banner">✅ Test email sent successfully.</div>
+            {% elif message == "test_email_failed" %}
+                <div class="error-banner">❌ Test email failed. Please check SMTP account or app password.</div>
+            {% endif %}
+
+            <div class="admin-card">
+                <h3>📧 Notification Settings</h3>
+                <p class="note">Configure where IoT-Shield sends HIGH and CRITICAL alerts.</p>
+
+                <form action="/settings/notification" method="POST">
+                    <label><b>Recipient Email</b></label><br><br>
+
+                    <input
+                        type="email"
+                        name="recipient_email"
+                        placeholder="Enter new recipient email"
+                        required
+                        class="settings-input"
+                    >
+
+                    <button type="submit" class="settings-btn">
+                        Save Changes
+                    </button>
+                </form>
+
+                <hr>
+
+                <p><b>Current Recipient</b></p>
+                <p>📧 {{ settings['recipient_email'] }}</p>
+
+                <p><b>Notification Status</b></p>
+                {% if settings['recipient_email'] %}
+                    <p style="color:#16a34a;font-weight:bold;">🟢 Configured</p>
+                {% else %}
+                    <p style="color:#dc2626;font-weight:bold;">🔴 Not Configured</p>
+                {% endif %}
+
+                <a href="/settings/test-email">
+                    <button class="test-email-btn">Send Test Email</button>
+                </a>
+            </div>
+
+            <div class="admin-card disabled-card">
+                <h3>⚙️ Detection Settings</h3>
+                <p class="note">Coming soon: configure flood threshold, critical threshold, and abnormal value limits.</p>
+            </div>
+
+            <div class="admin-card disabled-card">
+                <h3>📡 MQTT Settings</h3>
+                <p class="note">Coming soon: configure MQTT broker host and port.</p>
+            </div>
+
+            <div class="admin-card disabled-card">
+                <h3>🧪 Attack Builder Settings</h3>
+                <p class="note">Coming soon: configure dynamic attack simulation settings.</p>
+            </div>
         </div>
 
     </div>

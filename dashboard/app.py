@@ -1,4 +1,12 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from flask import Flask, render_template, redirect, url_for, request
+from config.config_manager import get_all_settings, set_setting
+from notification.email_alert import send_test_email
+
 import sqlite3
 import os
 import subprocess
@@ -136,6 +144,8 @@ def index():
     summary = get_summary()
     severity_data, attack_data = get_chart_data()
     latest_critical_alert = get_latest_critical_alert()
+    settings = get_all_settings()
+    message = request.args.get("message")
 
     return render_template(
         "index.html",
@@ -145,7 +155,9 @@ def index():
         severity_data=severity_data,
         attack_data=attack_data,
         current_filter=filter_type,
-        latest_critical_alert=latest_critical_alert
+        latest_critical_alert=latest_critical_alert,
+        settings=settings,
+        message=message
     )
 
 
@@ -221,6 +233,26 @@ def clear_alerts():
     conn.commit()
     conn.close()
     return redirect(url_for("index") + "#alerts")
+
+
+@app.route("/settings/notification", methods=["POST"])
+def update_notification_settings():
+    recipient_email = request.form.get("recipient_email")
+
+    if recipient_email:
+        set_setting("recipient_email", recipient_email)
+
+    return redirect(url_for("index") + "#settings")
+
+
+@app.route("/settings/test-email")
+def test_email_notification():
+    success = send_test_email()
+
+    if success:
+        return redirect(url_for("index", message="test_email_sent") + "#settings")
+    else:
+        return redirect(url_for("index", message="test_email_failed") + "#settings")
 
 
 if __name__ == "__main__":
