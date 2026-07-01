@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>IoT-Shield Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='simulation.css') }}">
 
     <style>
         html {
@@ -263,6 +264,67 @@
             }
         }
 
+
+
+        .admin-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            background: #ffffff;
+        }
+
+        .disabled-card {
+            background: #f9fafb;
+            opacity: 0.8;
+        }
+
+        .settings-input {
+            width: 350px;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+        }
+
+        .settings-btn {
+            margin-left: 10px;
+            padding: 10px 16px;
+            background: #1e3a8a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .test-email-btn {
+            padding: 10px 16px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .success-banner {
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .error-banner {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
         .footer {
             text-align: center;
             padding: 15px;
@@ -309,22 +371,22 @@
 
             <div class="card">
                 <h3>Total Messages</h3>
-                <p>{{ summary.total_messages }}</p>
+                <p id="totalMessages">{{ summary.total_messages }}</p>
             </div>
 
             <div class="card">
                 <h3>Total Alerts</h3>
-                <p>{{ summary.total_alerts }}</p>
+                <p id="totalAlerts">{{ summary.total_alerts }}</p>
             </div>
 
             <div class="card">
                 <h3>High / Critical Alerts</h3>
-                <p>{{ summary.high_critical_alerts }}</p>
+                <p id="highCriticalAlerts">{{ summary.high_critical_alerts }}</p>
             </div>
 
             <div class="card">
                 <h3>Active Devices</h3>
-                <p>{{ summary.active_devices }}</p>
+                <p id="activeDevices">{{ summary.active_devices }}</p>
             </div>
         </div>
 
@@ -344,16 +406,172 @@
             </div>
         </div>
 
-        <div id="simulation" class="section">
-            <h2>Simulation Center</h2>
-            <p class="note">Use the buttons below to simulate normal traffic and selected IoT attack scenarios.</p>
+        <div id="simulation" class="section simulation-v2">
+            <div class="sim-header-row">
+                <div>
+                    <h2>Simulation Center</h2>
+                    <p class="note">Run preset attacks or build a custom MQTT attack scenario dynamically.</p>
+                </div>
+                <span class="version-pill">IoT-Shield v2.0</span>
+            </div>
 
-            <div class="sim-buttons">
-                <a href="/simulate/normal"><button>Simulate Normal Traffic</button></a>
-                <a href="/simulate/flood"><button>Flood Attack</button></a>
-                <a href="/simulate/unauthorized"><button>Unauthorized Topic</button></a>
-                <a href="/simulate/abnormal"><button>Abnormal Value</button></a>
-                <a href="/simulate/malformed"><button>Malformed Payload</button></a>
+            <div class="preset-card">
+                <h3>Preset Attack Library</h3>
+                <p class="note">Use ready-made simulations for quick testing and demonstration.</p>
+
+                <div class="sim-buttons preset-buttons">
+                    <a href="/simulate/normal"><button>Normal Traffic</button></a>
+                    <a href="/simulate/flood"><button>Flood Attack</button></a>
+                    <a href="/simulate/unauthorized"><button>Unauthorized Topic</button></a>
+                    <a href="/simulate/abnormal"><button>Abnormal Value</button></a>
+                    <a href="/simulate/malformed"><button>Malformed Payload</button></a>
+                </div>
+            </div>
+
+            <div class="builder-divider">
+                <span>OR CREATE YOUR OWN ATTACK</span>
+            </div>
+
+            <div class="attack-builder-grid">
+                <div class="builder-card">
+                    <h3>🧪 Custom Attack Builder</h3>
+                    <p class="note">Configure attack parameters without editing Python scripts.</p>
+
+                    <label class="field-label">Attack Template</label>
+                    <select id="attackTemplate" class="builder-input">
+                        <option value="flood">Flood Attack</option>
+                        <option value="unauthorized">Unauthorized Topic</option>
+                        <option value="abnormal">Abnormal Value</option>
+                        <option value="malformed">Malformed Payload</option>
+                        <option value="hybrid" selected>Hybrid Attack</option>
+                        <option value="custom">Custom</option>
+                    </select>
+
+                    <div id="behaviourSection" class="builder-subsection">
+                        <h4>Attack Behaviour</h4>
+                        <div class="checkbox-grid">
+                            <label><input type="checkbox" id="behFlood" checked> Flooding</label>
+                            <label><input type="checkbox" id="behUnauthorized" checked> Unauthorized Topic</label>
+                            <label><input type="checkbox" id="behUnknown" checked> Unknown Device</label>
+                            <label><input type="checkbox" id="behAbnormal" checked> Abnormal Value</label>
+                            <label><input type="checkbox" id="behMalformed"> Malformed Payload</label>
+                        </div>
+                    </div>
+
+                    <div class="builder-subsection">
+                        <h4>Attack Configuration</h4>
+
+                        <div class="form-grid">
+                            <div>
+                                <label class="field-label">Device ID</label>
+                                <input id="deviceId" class="builder-input" value="attacker_custom_01">
+                            </div>
+
+                            <div>
+                                <label class="field-label">MQTT Topic</label>
+                                <input id="topic" class="builder-input" value="admin/control">
+                            </div>
+
+                            <div>
+                                <label class="field-label">Sensor Type</label>
+                                <select id="sensorType" class="builder-input">
+                                    <option value="temperature" selected>Temperature</option>
+                                    <option value="humidity">Humidity</option>
+                                    <option value="pressure">Pressure</option>
+                                    <option value="voltage">Voltage</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="field-label">Sensor Value</label>
+                                <input id="sensorValue" type="number" class="builder-input" value="999">
+                            </div>
+
+                            <div>
+                                <label class="field-label">Payload Type</label>
+                                <select id="payloadType" class="builder-input">
+                                    <option value="json" selected>JSON-like Payload</option>
+                                    <option value="malformed">Malformed Payload</option>
+                                    <option value="plain">Plain Text</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="field-label">Attack Mode</label>
+                                <select id="attackMode" class="builder-input">
+                                    <option value="fixed" selected>Fixed Count</option>
+                                    <option value="infinite">Infinite Until Stopped</option>
+                                </select>
+                            </div>
+
+                            <div id="repeatGroup">
+                                <label class="field-label">Repeat Count</label>
+                                <input id="repeatCount" type="number" min="1" class="builder-input" value="150">
+                            </div>
+
+                            <div>
+                                <label class="field-label">Delay Between Messages (ms)</label>
+                                <input id="delayMs" type="number" min="1" class="builder-input" value="10">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="builder-actions">
+                        <button type="button" id="executeAttackBtn" class="execute-btn">Execute Attack</button>
+                        <button type="button" id="stopAttackBtn" class="stop-btn" disabled>Stop Attack</button>
+                    </div>
+                </div>
+
+                <div class="preview-column">
+                    <div class="preview-card">
+                        <h3>👁️ Attack Preview</h3>
+                        <p class="note">Live summary of the configured attack scenario.</p>
+
+                        <div class="preview-item">
+                            <span>Attack Type</span>
+                            <strong id="previewAttackType">Hybrid Attack</strong>
+                        </div>
+
+                        <div class="preview-item">
+                            <span>Device ID</span>
+                            <strong id="previewDevice">attacker_custom_01</strong>
+                        </div>
+
+                        <div class="preview-item">
+                            <span>Topic</span>
+                            <strong id="previewTopic">admin/control</strong>
+                        </div>
+
+                        <div class="preview-item">
+                            <span>Estimated Messages</span>
+                            <strong id="previewMessages">150</strong>
+                        </div>
+
+                        <h4>Expected Detection</h4>
+                        <ul id="expectedDetection" class="detection-list"></ul>
+                    </div>
+
+                    <div class="status-card">
+                        <h3>📊 Attack Status</h3>
+
+                        <div class="status-row">
+                            <span>Status</span>
+                            <strong id="attackStatus" class="status-idle">🟢 Idle</strong>
+                        </div>
+
+                        <div class="status-row">
+                            <span>Messages Sent</span>
+                            <strong id="messagesSent">0</strong>
+                        </div>
+
+                        <div class="status-row">
+                            <span>Duration</span>
+                            <strong id="attackDuration">00:00</strong>
+                        </div>
+
+                        <p class="note status-note">Backend connection will be enabled in Sprint 2.2.</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -361,23 +579,27 @@
             <h2>Live Traffic Monitor</h2>
 
             <table>
-                <tr>
-                    <th>Time</th>
-                    <th>Device</th>
-                    <th>Topic</th>
-                    <th>Payload</th>
-                    <th>Status</th>
-                </tr>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Device</th>
+                        <th>Topic</th>
+                        <th>Payload</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
 
-                {% for row in traffic %}
-                <tr>
-                    <td>{{ row.timestamp }}</td>
-                    <td>{{ row.device_id }}</td>
-                    <td>{{ row.topic }}</td>
-                    <td>{{ row.payload }}</td>
-                    <td>{{ row.status }}</td>
-                </tr>
-                {% endfor %}
+                <tbody id="trafficTableBody">
+                    {% for row in traffic %}
+                    <tr>
+                        <td>{{ row.timestamp }}</td>
+                        <td>{{ row.device_id }}</td>
+                        <td>{{ row.topic }}</td>
+                        <td>{{ row.payload }}</td>
+                        <td>{{ row.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
 
@@ -401,56 +623,106 @@
             </div>
 
             <table>
-                <tr>
-                    <th>Time</th>
-                    <th>Device</th>
-                    <th>Topic</th>
-                    <th>Attack Type</th>
-                    <th>Severity</th>
-                    <th>Status</th>
-                    <th>Description</th>
-                    <th>Action</th>
-                </tr>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Device</th>
+                        <th>Attack Type</th>
+                        <th>Severity</th>
+                        <th>Occurrences</th>
+                        <th>First Seen</th>
+                        <th>Last Seen</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
 
+                <tbody id="alertsTableBody">
                 {% for alert in alerts %}
                 <tr>
+
                     <td>{{ alert.timestamp }}</td>
+
                     <td>{{ alert.device_id }}</td>
-                    <td>{{ alert.topic }}</td>
+
                     <td>{{ alert.attack_type }}</td>
+
                     <td>
-                        <span class="badge {{ alert.severity }}">{{ alert.severity }}</span>
+                        <span class="badge {{ alert.severity }}">
+                            {{ alert.severity }}
+                        </span>
                     </td>
+
+                    <td style="text-align:center;font-weight:bold;">
+                        {{ alert.occurrences }}
+                    </td>
+
+                    <td>{{ alert.first_seen }}</td>
+
+                    <td>{{ alert.last_seen }}</td>
 
                     <td>
                         {% if alert.status == 'NEW' %}
-                            <span style="color:#dc2626; font-weight:bold;">NEW</span>
+                            <span style="color:#dc2626;font-weight:bold;">
+                                ACTIVE
+                            </span>
+
                         {% elif alert.status == 'ACKNOWLEDGED' %}
-                            <span style="color:#f97316; font-weight:bold;">ACKNOWLEDGED</span>
-                        {% elif alert.status == 'RESOLVED' %}
-                            <span style="color:#16a34a; font-weight:bold;">RESOLVED</span>
+
+                            <span style="color:#f97316;font-weight:bold;">
+                                ACKNOWLEDGED
+                            </span>
+
                         {% else %}
-                            {{ alert.status }}
+
+                            <span style="color:#16a34a;font-weight:bold;">
+                                RESOLVED
+                            </span>
+
                         {% endif %}
                     </td>
 
-                    <td>{{ alert.description }}</td>
-
                     <td>
+
                         {% if alert.status == 'NEW' %}
+
                             <a href="/alert/{{ alert.id }}/acknowledge">
-                                <button class="action-btn ack-btn">Acknowledge</button>
+
+                                <button class="action-btn ack-btn">
+
+                                    Acknowledge
+
+                                </button>
+
                             </a>
+
                         {% elif alert.status == 'ACKNOWLEDGED' %}
+
                             <a href="/alert/{{ alert.id }}/resolve">
-                                <button class="action-btn resolve-btn">Resolve</button>
+
+                                <button class="action-btn resolve-btn">
+
+                                    Resolve
+
+                                </button>
+
                             </a>
+
                         {% else %}
-                            <span style="color:#16a34a;font-weight:bold;">Closed</span>
+
+                            <span style="color:#16a34a;font-weight:bold;">
+
+                                Closed
+
+                            </span>
+
                         {% endif %}
+
                     </td>
+
                 </tr>
                 {% endfor %}
+                </tbody>
             </table>
         </div>
 
@@ -554,7 +826,88 @@
     });
     </script>
 
+    <script>
+    async function refreshDashboardData() {
+        try {
+            const response = await fetch("/api/dashboard-data");
+            const data = await response.json();
 
+            document.getElementById("totalMessages").textContent = data.summary.total_messages;
+            document.getElementById("totalAlerts").textContent = data.summary.total_alerts;
+            document.getElementById("highCriticalAlerts").textContent = data.summary.high_critical_alerts;
+            document.getElementById("activeDevices").textContent = data.summary.active_devices;
+
+            const trafficBody = document.getElementById("trafficTableBody");
+            trafficBody.innerHTML = "";
+
+            data.traffic.forEach(row => {
+                trafficBody.innerHTML += `
+                    <tr>
+                        <td>${row.timestamp}</td>
+                        <td>${row.device_id}</td>
+                        <td>${row.topic}</td>
+                        <td>${row.payload}</td>
+                        <td>${row.status}</td>
+                    </tr>
+                `;
+            });
+
+            const alertsBody = document.getElementById("alertsTableBody");
+            alertsBody.innerHTML = "";
+
+            data.alerts.forEach(alert => {
+                let statusHtml = "";
+
+                if (alert.status === "NEW") {
+                    statusHtml = `<span style="color:#dc2626;font-weight:bold;">ACTIVE</span>`;
+                } else if (alert.status === "ACKNOWLEDGED") {
+                    statusHtml = `<span style="color:#f97316;font-weight:bold;">ACKNOWLEDGED</span>`;
+                } else {
+                    statusHtml = `<span style="color:#16a34a;font-weight:bold;">RESOLVED</span>`;
+                }
+
+                let actionHtml = "";
+
+                if (alert.status === "NEW") {
+                    actionHtml = `
+                        <a href="/alert/${alert.id}/acknowledge">
+                            <button class="action-btn ack-btn">Acknowledge</button>
+                        </a>
+                    `;
+                } else if (alert.status === "ACKNOWLEDGED") {
+                    actionHtml = `
+                        <a href="/alert/${alert.id}/resolve">
+                            <button class="action-btn resolve-btn">Resolve</button>
+                        </a>
+                    `;
+                } else {
+                    actionHtml = `<span style="color:#16a34a;font-weight:bold;">Closed</span>`;
+                }
+
+                alertsBody.innerHTML += `
+                    <tr>
+                        <td>${alert.timestamp}</td>
+                        <td>${alert.device_id}</td>
+                        <td>${alert.attack_type}</td>
+                        <td><span class="badge ${alert.severity}">${alert.severity}</span></td>
+                        <td style="text-align:center;font-weight:bold;">${alert.occurrences || 1}</td>
+                        <td>${alert.first_seen || alert.timestamp}</td>
+                        <td>${alert.last_seen || alert.timestamp}</td>
+                        <td>${statusHtml}</td>
+                        <td>${actionHtml}</td>
+                    </tr>
+                `;
+            });
+
+        } catch (error) {
+            console.log("Dashboard refresh error:", error);
+        }
+    }
+
+    setInterval(refreshDashboardData, 2000);
+    </script>
+
+    <script src="{{ url_for('static', filename='simulation.js') }}"></script>
 
 </body>
 </html>

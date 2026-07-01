@@ -30,7 +30,11 @@ CREATE TABLE IF NOT EXISTS alerts (
     attack_type TEXT,
     severity TEXT,
     description TEXT,
-    status TEXT DEFAULT 'NEW'
+    status TEXT DEFAULT 'NEW',
+
+    occurrences INTEGER DEFAULT 1,
+    first_seen TEXT,
+    last_seen TEXT
 )
 """)
 

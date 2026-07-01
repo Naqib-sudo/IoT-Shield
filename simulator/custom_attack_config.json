@@ -1,0 +1,17 @@
+{
+    "template": "hybrid",
+    "behaviours": [
+        "flood",
+        "unauthorized",
+        "unknown",
+        "abnormal"
+    ],
+    "device_id": "attacker_custom_01",
+    "topic": "admin/control",
+    "sensor_type": "temperature",
+    "sensor_value": "999",
+    "payload_type": "json",
+    "mode": "fixed",
+    "repeat_count": "150",
+    "delay_ms": "10"
+}

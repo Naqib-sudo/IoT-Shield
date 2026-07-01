@@ -75,33 +75,85 @@ def save_alert(device_id, topic, attack_type, severity, description):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
+    # Check if the same alert is already active
+    existing_alert = cursor.execute("""
+        SELECT id, occurrences
+        FROM alerts
+        WHERE device_id = ?
+        AND attack_type = ?
+        AND status = 'NEW'
+        ORDER BY id DESC
+        LIMIT 1
+    """, (device_id, attack_type)).fetchone()
+
+    # If active alert already exists, update occurrence count and last seen time
+    if existing_alert:
+        alert_id = existing_alert[0]
+        current_occurrences = existing_alert[1] if existing_alert[1] else 1
+
+        cursor.execute("""
+            UPDATE alerts
+            SET occurrences = ?,
+                last_seen = ?
+            WHERE id = ?
+        """, (current_occurrences + 1, timestamp, alert_id))
+
+        conn.commit()
+        conn.close()
+
+        print(f"[ALERT UPDATED] {attack_type} for {device_id} | Occurrences: {current_occurrences + 1}")
+        return
+
+    # Create a new alert
     cursor.execute("""
-        INSERT INTO alerts (timestamp, device_id, topic, attack_type, severity, description, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (timestamp, device_id, topic, attack_type, severity, description, "NEW"))
+        INSERT INTO alerts (
+            timestamp,
+            device_id,
+            topic,
+            attack_type,
+            severity,
+            description,
+            status,
+            occurrences,
+            first_seen,
+            last_seen
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        timestamp,
+        device_id,
+        topic,
+        attack_type,
+        severity,
+        description,
+        "NEW",
+        1,
+        timestamp,
+        timestamp
+    ))
 
     conn.commit()
+    conn.close()
+
+    # Send email only for the first HIGH / CRITICAL alert
     if severity in ["HIGH", "CRITICAL"]:
         send_email_alert(
             subject=f"🚨 IoT-Shield {severity} Alert",
             body=f"""
-    Attack Type: {attack_type}
+Attack Type: {attack_type}
 
-    Severity: {severity}
+Severity: {severity}
 
-    Device: {device_id}
+Device: {device_id}
 
-    Topic: {topic}
+Topic: {topic}
 
-    Description:
-    {description}
+Description:
+{description}
 
-    Please review the IoT-Shield dashboard immediately.
-    """
+Please review the IoT-Shield dashboard immediately.
+"""
         )
-
-        
-    conn.close()
 
     log_file = os.path.join(
         ALERT_LOG_DIR,
@@ -109,10 +161,12 @@ def save_alert(device_id, topic, attack_type, severity, description):
     )
 
     with open(log_file, "a") as f:
-        f.write(f"{timestamp} | {severity} | {device_id} | {topic} | {attack_type} | {description}\n")
+        f.write(
+            f"{timestamp} | {severity} | {device_id} | {topic} | "
+            f"{attack_type} | {description}\n"
+        )
 
     print(f"[ALERT] {severity} - {attack_type}: {description}")
-
 
 def parse_payload(payload):
     try:

@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -16,6 +17,8 @@ app = Flask(__name__)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DB_PATH = os.path.join(BASE_DIR, "database", "iot_shield.db")
+CUSTOM_ATTACK_PROCESS = None
+CUSTOM_ATTACK_CONFIG_PATH = os.path.join(BASE_DIR, "simulator", "custom_attack_config.json")
 
 
 def get_db_connection():
@@ -29,7 +32,8 @@ def get_alerts(filter_type=None):
 
     if filter_type in ["LOW", "MEDIUM", "HIGH", "CRITICAL"]:
         alerts = conn.execute("""
-            SELECT id, timestamp, device_id, topic, attack_type, severity, description, status
+            SELECT id, timestamp, device_id, topic, attack_type, severity, description, status,
+            occurrences, first_seen, last_seen
             FROM alerts
             WHERE severity = ?
             ORDER BY id DESC
@@ -38,7 +42,8 @@ def get_alerts(filter_type=None):
 
     elif filter_type in ["NEW", "ACKNOWLEDGED", "RESOLVED"]:
         alerts = conn.execute("""
-            SELECT id, timestamp, device_id, topic, attack_type, severity, description, status
+            SELECT id, timestamp, device_id, topic, attack_type, severity, description, status,
+            occurrences, first_seen, last_seen
             FROM alerts
             WHERE status = ?
             ORDER BY id DESC
@@ -47,7 +52,8 @@ def get_alerts(filter_type=None):
 
     else:
         alerts = conn.execute("""
-            SELECT id, timestamp, device_id, topic, attack_type, severity, description, status
+            SELECT id, timestamp, device_id, topic, attack_type, severity, description, status,
+            occurrences, first_seen, last_seen
             FROM alerts
             ORDER BY id DESC
             LIMIT 50
@@ -253,6 +259,72 @@ def test_email_notification():
         return redirect(url_for("index", message="test_email_sent") + "#settings")
     else:
         return redirect(url_for("index", message="test_email_failed") + "#settings")
+
+
+@app.route("/simulate/custom", methods=["POST"])
+def simulate_custom_attack():
+    global CUSTOM_ATTACK_PROCESS
+
+    if CUSTOM_ATTACK_PROCESS and CUSTOM_ATTACK_PROCESS.poll() is None:
+        return {"success": False, "message": "Another custom attack is already running."}, 400
+
+    attack_config = request.get_json()
+
+    os.makedirs(os.path.join(BASE_DIR, "simulator"), exist_ok=True)
+
+    with open(CUSTOM_ATTACK_CONFIG_PATH, "w") as file:
+        json.dump(attack_config, file, indent=4)
+
+    engine_path = os.path.join(BASE_DIR, "simulator", "attack_engine.py")
+
+    CUSTOM_ATTACK_PROCESS = subprocess.Popen(
+        [sys.executable, engine_path, "--config", CUSTOM_ATTACK_CONFIG_PATH],
+        cwd=BASE_DIR
+    )
+
+    return {"success": True, "message": "Custom attack started."}
+
+
+@app.route("/simulate/custom/stop", methods=["POST"])
+def stop_custom_attack():
+    global CUSTOM_ATTACK_PROCESS
+
+    if CUSTOM_ATTACK_PROCESS and CUSTOM_ATTACK_PROCESS.poll() is None:
+        CUSTOM_ATTACK_PROCESS.terminate()
+        CUSTOM_ATTACK_PROCESS = None
+        return {"success": True, "message": "Custom attack stopped."}
+
+    return {"success": False, "message": "No custom attack is currently running."}
+
+
+@app.route("/simulate/custom/status")
+def custom_attack_status():
+    global CUSTOM_ATTACK_PROCESS
+
+    running = CUSTOM_ATTACK_PROCESS is not None and CUSTOM_ATTACK_PROCESS.poll() is None
+
+    return {
+        "running": running
+    }
+
+
+@app.route("/api/dashboard-data")
+def api_dashboard_data():
+    alerts = get_alerts()
+    traffic = get_traffic_logs()
+    summary = get_summary()
+    severity_data, attack_data = get_chart_data()
+
+    alerts_list = [dict(row) for row in alerts]
+    traffic_list = [dict(row) for row in traffic]
+
+    return {
+        "summary": summary,
+        "alerts": alerts_list,
+        "traffic": traffic_list,
+        "severity_data": severity_data,
+        "attack_data": attack_data
+    }    
 
 
 if __name__ == "__main__":
